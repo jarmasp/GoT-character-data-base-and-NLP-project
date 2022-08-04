@@ -162,18 +162,20 @@ def create_relationships(df, window_size):
             for idx, a in enumerate(unique_char[:-1]): #iterating until the second last character to not exceed the index of the list
                 b = unique_char[idx + 1]
                 relationships.append({'source': a, 'target': b})
+                
+    relationship_df = pd.DataFrame(relationships)
 
-    #aggregating all the duplicated relationships, this will include reverser relationships; Eddard Stark\tBran and Bran\tEddard Stark for example
-
+    #aggregating all the duplicated relationships, this will include reverser relationships; Eddard\Bran and Bran\Eddard for example
+    
     #sort the df to identify the duplicates
-    relationships = pd.DataFrame(np.sort(relationships_df.values, axis=1), columns = relationships_df.columns)
+    relationship_df = pd.DataFrame(np.sort(relationship_df.values, axis=1), columns = relationship_df.columns)
     
     #adding a weight to the relation ship
-    relationships['value'] = 1
+    relationship_df['value'] = 1
     #summing up all the weights of the relationships
-    relationships = relationships.groupby(['source', 'target'], sort=False, as_index=False).sum()
+    relationship_df = relationship_df.groupby(['source', 'target'], sort=False, as_index=False).sum()
 
-    return relationships
+    return relationship_df
 
 
 def graph_of_degreess(degree_dict):
@@ -196,7 +198,7 @@ def graph_of_degreess(degree_dict):
     plt.show()
 
 
-def relationships_graph(relationships):
+def relationships_graph(relationship_df):
 
     """
     creates a graph of the relationship using network x and then pyvis to visualize the communities in the graph
@@ -211,7 +213,7 @@ def relationships_graph(relationships):
 
     #creating the visualization of the relationship_df
     #this is a simplistic model so the only edge attribute to take into account will be the value column of the data frame
-    G = nx.from_pandas_edgelist(relationships, source='source', target='target', edge_attr='value', create_using = nx.Graph())
+    G = nx.from_pandas_edgelist(relationship_df, source='source', target='target', edge_attr='value', create_using = nx.Graph())
 
     plt.figure(figsize=(20,20))
     pos = nx.kamada_kawai_layout(G) #I like how this one looks... spoilers to many characters so it looks horrible
