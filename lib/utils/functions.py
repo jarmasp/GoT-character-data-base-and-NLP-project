@@ -210,36 +210,40 @@ def relationships_graph(relationship_df):
     graph of the relationship of the characters in the books
 
     """
-
+    
     #creating the visualization of the relationship_df
     #this is a simplistic model so the only edge attribute to take into account will be the value column of the data frame
     G = nx.from_pandas_edgelist(relationship_df, source='source', target='target', edge_attr='value', create_using = nx.Graph())
-
+    
     plt.figure(figsize=(20,20))
-    pos = nx.kamada_kawai_layout(G) #I like how this one looks... spoilers to many characters so it looks horrible
+    pos = nx.kamada_kawai_layout(G) #I like how this one looks... spoiler too many characters so it looks horrible
     nx.draw(G, with_labels=True, node_color='skyblue', edge_cmap=plt.cm.Blues, pos=pos)
-    plt.show()
+    plt.show() #looks horrible, better use the .html from pyvis
 
-    #degree of centralityn"
+    #degree of centrality
     degree_dict = nx.degree_centrality(G)
 
-    #closeness centrality"
+    #closeness centrality
     closeness_dict = nx.closeness_centrality(G)
 
-    #betweeness centrality"
+    #betweeness centrality
     betweenness_dict = nx.betweenness_centrality(G)
 
-    #community detection"
+    #community detection
     communities = community_louvain.best_partition(G)
+    
+    
+    #sizing the nodes by their degrees (how many conections they have)
+    node_degree = dict(G.degree)
+    nx.set_node_attributes(G, node_degree, 'size')
+    nx.set_node_attributes(G, degree_dict, 'degrees')
+    nx.set_node_attributes(G, closeness_dict, 'closeness')
+    nx.set_node_attributes(G, betweenness_dict, 'betweeness')
+    nx.set_node_attributes(G, communities, 'group')
 
     #using pyvis to make the visualization bearable to the eyes
     net = Network(notebook=True, width='1000px', height='700px', bgcolor='#222222', font_color='white')
     net.repulsion()
-
-    #sizing the nodes by their degrees (how many conections they have)
-    node_degree = dict(G.degree)
-    nx.set_node_attributes(G, node_degree, 'size')
-    nx.set_node_attributes(G, communities, 'group')
 
     #pyvis interfaces with network X"
     net.from_nx(G)
